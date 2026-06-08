@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zxcmodule — API Reference</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f0f0f;--bg2:#151515;--bg3:#1a1a1a;--border:#232323;--text:#b8b8b8;--text2:#777;--text3:#555;--green:#6dbf8f;--blue:#6aacdd;--purple:#b088d8;--orange:#d4936a;--yellow:#c9b46a;--red:#cc6666;--white:#e8e8e8}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13.5px;line-height:1.6}
+code,pre,.mono{font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:230px;min-width:230px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a2a2a transparent;display:flex;flex-direction:column;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px}
+.sidebar-header{padding:18px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-module{font-size:17px;font-weight:700;color:var(--white);letter-spacing:-.01em}
+.sidebar-module span{color:var(--green)}
+.sidebar-meta{font-size:11px;color:var(--text3);margin-top:3px}
+.nav-group{margin-top:4px}
+.nav-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:10px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:6px;padding:5px 16px;cursor:pointer;color:var(--text2);font-size:12.5px;transition:all .12s;border-left:2px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--text);background:var(--bg3);border-left-color:var(--border);text-decoration:none}
+.nav-item.active{color:var(--green);background:rgba(109,191,143,.06);border-left-color:var(--green)}
+
+/* MAIN */
+.main{flex:1;margin-left:230px;padding:40px 52px 80px;max-width:900px}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.page-title{font-size:26px;font-weight:700;color:var(--white);margin-bottom:6px}
+.page-desc{color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:12px}
+.pill-row{display:flex;gap:7px;flex-wrap:wrap}
+.pill{font-size:10.5px;padding:3px 9px;border-radius:99px;font-weight:600;letter-spacing:.04em}
+.pill-green{background:rgba(109,191,143,.12);color:var(--green);border:1px solid rgba(109,191,143,.25)}
+.pill-blue{background:rgba(106,172,221,.1);color:var(--blue);border:1px solid rgba(106,172,221,.2)}
+.pill-red{background:rgba(204,102,102,.1);color:var(--red);border:1px solid rgba(204,102,102,.2)}
+
+/* CODE BLOCK */
+.code-block{background:#0a0a0a;border:1px solid var(--border);border-radius:7px;padding:18px 22px;margin-bottom:30px;font-size:12px;line-height:1.9;position:relative}
+.code-block .label{position:absolute;top:10px;right:14px;font-size:10px;color:var(--text3);letter-spacing:.08em;font-family:'Segoe UI',sans-serif}
+.kw{color:#c792ea}
+.fn{color:var(--blue)}
+.str{color:#c3e88d}
+.num{color:var(--orange)}
+.ns{color:var(--green)}
+.cmt{color:#404040}
+.bool{color:#ff9cac}
+
+/* SECTION */
+.section{margin-bottom:26px;scroll-margin-top:24px}
+.section-anchor{display:block;height:0;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:9px;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;cursor:pointer;user-select:none;transition:background .12s}
+.section-header:hover{background:var(--bg3)}
+.section-header.open{border-radius:7px 7px 0 0}
+.chevron{font-size:10px;color:var(--text3);transition:transform .18s;display:inline-block}
+.chevron.open{transform:rotate(90deg)}
+.section-title{font-size:13px;font-weight:600;color:var(--white)}
+.section-count{margin-left:auto;font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:1px 8px}
+.section-body{border:1px solid var(--border);border-top:none;border-radius:0 0 7px 7px;display:none;overflow:hidden}
+.section-body.open{display:block}
+
+/* FUNCTION ROW */
+.fn-row{border-bottom:1px solid #111;cursor:pointer;transition:background .1s}
+.fn-row:last-child{border-bottom:none}
+.fn-row:hover{background:var(--bg3)}
+.fn-row.active{background:#131313}
+.fn-main{padding:11px 16px;display:flex;align-items:baseline;gap:10px}
+.fn-sig{flex:1;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.6}
+.ret{color:var(--green)}
+.fn-name-text{color:var(--blue)}
+.p-name{color:var(--orange)}
+.p-type{color:var(--purple)}
+.p-default{color:var(--text3)}
+.expand-btn{font-size:10px;color:var(--text3);min-width:14px;text-align:right;flex-shrink:0}
+.fn-row:hover .expand-btn{color:var(--text2)}
+
+.fn-detail{display:none;border-top:1px solid #111;background:#0c0c0c;padding:14px 18px}
+.fn-detail.open{display:block}
+.fn-desc{color:var(--text2);font-size:12.5px;line-height:1.7;margin-bottom:12px}
+.fn-desc:last-child{margin-bottom:0}
+
+.param-grid{display:grid;grid-template-columns:130px 110px 1fr;gap:0;margin-bottom:8px}
+.ph{font-size:10px;color:var(--text3);padding:3px 8px;border-bottom:1px solid #1a1a1a;font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-family:'Segoe UI',sans-serif}
+.pc{font-size:12px;padding:5px 8px;border-bottom:1px solid #141414;font-family:'JetBrains Mono','Fira Code',monospace}
+.pc:last-child{font-family:'Segoe UI',sans-serif;color:var(--text2)}
+.pc.pn{color:var(--orange)}
+.pc.pt{color:var(--purple)}
+.ret-line{font-size:12px;color:var(--text2);margin-top:8px}
+.ret-line span{color:var(--green);font-family:'JetBrains Mono','Fira Code',monospace}
+
+/* HOOK ROW */
+.hook-name{color:var(--yellow)}
+.hook-ret{color:var(--green);margin-left:4px}
+
+.callout{font-size:12px;color:var(--text2);padding:9px 13px;background:rgba(109,191,143,.05);border-left:2px solid var(--green);border-radius:0 4px 4px 0;margin-top:10px;line-height:1.6}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#282828;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#333}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .sidebar{position:relative;width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .layout{flex-direction:column}
+  .main{margin-left:0;padding:24px 20px 60px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-module"><span>zxc</span>module</div>
+    <div class="sidebar-meta">x64 &middot; Client-state &middot; Cheat API</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item active" href="#s-intro">Introduction</a>
+    <a class="nav-item" href="#s-example">Code Example</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">_G.ded</div>
+    <a class="nav-item" href="#s-cmd">Commands</a>
+    <a class="nav-item" href="#s-view">View &amp; Angles</a>
+    <a class="nav-item" href="#s-gamestate">Game State</a>
+    <a class="nav-item" href="#s-time">Timing</a>
+    <a class="nav-item" href="#s-convar">ConVar</a>
+    <a class="nav-item" href="#s-prediction">Prediction</a>
+    <a class="nav-item" href="#s-anim">Animation &amp; Interp</a>
+    <a class="nav-item" href="#s-packet">Packet Control</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Registry Changes</div>
+    <a class="nav-item" href="#s-usercmd">CUserCmd</a>
+    <a class="nav-item" href="#s-player">Player</a>
+    <a class="nav-item" href="#s-entity">Entity</a>
+    <a class="nav-item" href="#s-netvar">Networked Vars</a>
+    <a class="nav-item" href="#s-netchan">Net Channel</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Hooks</div>
+    <a class="nav-item" href="#s-hooks">Hooks</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div id="s-intro" class="page-header" style="scroll-margin-top:24px">
+    <div class="page-title">zxcmodule</div>
+    <div class="page-desc">
+      Binary module for Garry's Mod providing low-level access to engine internals — prediction, animation, network channel, and ConVar manipulation.<br>
+      Author: <a href="https://github.com/serejaga">serejaga</a>
+    </div>
+    <div class="pill-row">
+      <span class="pill pill-green">x64</span>
+      <span class="pill pill-blue">Client-state</span>
+      <span class="pill pill-red">Cheat Module</span>
+    </div>
+  </div>
+
+  <div id="s-example" style="scroll-margin-top:24px">
+    <div class="code-block">
+      <div class="label">lua</div>
+      <div><span class="kw">require</span>(<span class="str">"zxcmodule"</span>)</div><br>
+      <div><span class="cmt">-- Remove cheat protection from a ConVar</span></div>
+      <div><span class="ns">ded</span>.<span class="fn">ConVarSetFlags</span>(<span class="str">"mat_fullbright"</span>, <span class="num">0</span>)</div><br>
+      <div><span class="cmt">-- Disable entity interpolation</span></div>
+      <div><span class="ns">ded</span>.<span class="fn">SetInterpolation</span>(<span class="bool">false</span>)</div><br>
+      <div><span class="cmt">-- Disable animation sequence interpolation</span></div>
+      <div><span class="ns">ded</span>.<span class="fn">SetSequenceInterpolation</span>(<span class="bool">false</span>)</div><br>
+      <div><span class="cmt">-- Hook into CreateMove</span></div>
+      <div><span class="ns">hook</span>.<span class="fn">Add</span>(<span class="str">"PreCreateMove"</span>, <span class="str">"example"</span>, <span class="kw">function</span>(cmd)</div>
+      <div style="padding-left:20px"><span class="ns">ded</span>.<span class="fn">SetBSendPacket</span>(<span class="bool">false</span>) <span class="cmt">-- choke packet</span></div>
+      <div><span class="kw">end</span>)</div>
+    </div>
+  </div>
+
+  <!-- COMMANDS -->
+  <div class="section" id="s-cmd" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Commands</span>
+      <span class="section-count">7</span>
+    </div>
+    <div class="section-body open" id="b-cmd"></div>
+  </div>
+
+  <!-- VIEW -->
+  <div class="section" id="s-view" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">View &amp; Angles</span>
+      <span class="section-count">2</span>
+    </div>
+    <div class="section-body open" id="b-view"></div>
+  </div>
+
+  <!-- GAME STATE -->
+  <div class="section" id="s-gamestate" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Game State</span>
+      <span class="section-count">7</span>
+    </div>
+    <div class="section-body open" id="b-gamestate"></div>
+  </div>
+
+  <!-- TIMING -->
+  <div class="section" id="s-time" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Timing</span>
+      <span class="section-count">14</span>
+    </div>
+    <div class="section-body open" id="b-time"></div>
+  </div>
+
+  <!-- CONVAR -->
+  <div class="section" id="s-convar" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">ConVar</span>
+      <span class="section-count">4</span>
+    </div>
+    <div class="section-body open" id="b-convar"></div>
+  </div>
+
+  <!-- PREDICTION -->
+  <div class="section" id="s-prediction" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Prediction &amp; Simulation</span>
+      <span class="section-count">9</span>
+    </div>
+    <div class="section-body open" id="b-prediction"></div>
+  </div>
+
+  <!-- ANIM -->
+  <div class="section" id="s-anim" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Animation &amp; Interpolation</span>
+      <span class="section-count">5</span>
+    </div>
+    <div class="section-body open" id="b-anim"></div>
+  </div>
+
+  <!-- PACKET -->
+  <div class="section" id="s-packet" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Packet Control</span>
+      <span class="section-count">2</span>
+    </div>
+    <div class="section-body open" id="b-packet"></div>
+  </div>
+
+  <!-- USERCMD -->
+  <div class="section" id="s-usercmd" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">CUserCmd</span>
+      <span class="section-count">9</span>
+    </div>
+    <div class="section-body open" id="b-usercmd"></div>
+  </div>
+
+  <!-- PLAYER -->
+  <div class="section" id="s-player" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Player</span>
+      <span class="section-count">6</span>
+    </div>
+    <div class="section-body open" id="b-player"></div>
+  </div>
+
+  <!-- ENTITY -->
+  <div class="section" id="s-entity" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Entity</span>
+      <span class="section-count">4</span>
+    </div>
+    <div class="section-body open" id="b-entity"></div>
+  </div>
+
+  <!-- NETVAR -->
+  <div class="section" id="s-netvar" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Networked Vars</span>
+      <span class="section-count">7</span>
+    </div>
+    <div class="section-body open" id="b-netvar"></div>
+  </div>
+
+  <!-- NET CHANNEL -->
+  <div class="section" id="s-netchan" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Net Channel</span>
+      <span class="section-count">40+</span>
+    </div>
+    <div class="section-body open" id="b-netchan"></div>
+  </div>
+
+  <!-- HOOKS -->
+  <div class="section" id="s-hooks" style="scroll-margin-top:24px">
+    <div class="section-header open" onclick="toggleSec(this)">
+      <span class="chevron open">&#9658;</span>
+      <span class="section-title">Hooks</span>
+      <span class="section-count">12</span>
+    </div>
+    <div class="section-body open" id="b-hooks"></div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+function toggleSec(header) {
+  var body = header.nextElementSibling;
+  var ch = header.querySelector('.chevron');
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  ch.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+function toggleDetail(row) {
+  var d = row.nextElementSibling;
+  if (!d || !d.classList.contains('fn-detail')) return;
+  var open = d.classList.toggle('open');
+  var btn = row.querySelector('.expand-btn');
+  if (btn) btn.textContent = open ? '\u25b2' : '\u25bc';
+  row.classList.toggle('active', open);
+}
+
+// Highlight active nav item on scroll
+var sections = ['s-intro','s-example','s-cmd','s-view','s-gamestate','s-time','s-convar','s-prediction','s-anim','s-packet','s-usercmd','s-player','s-entity','s-netvar','s-netchan','s-hooks'];
+window.addEventListener('scroll', function() {
+  var scrollY = window.scrollY + 80;
+  var current = sections[0];
+  for (var i = 0; i < sections.length; i++) {
+    var el = document.getElementById(sections[i]);
+    if (el && el.offsetTop <= scrollY) current = sections[i];
+  }
+  document.querySelectorAll('.nav-item').forEach(function(n) {
+    n.classList.toggle('active', n.getAttribute('href') === '#' + current);
+  });
+});
+
+function t(type, name, color) {
+  return '<span style="color:var(--' + color + ')">' + type + '</span> <span style="color:var(--' + (name ? 'orange' : 'text3') + ')">' + (name || '') + '</span>';
+}
+
+function buildSig(ret, name, params) {
+  var retPart = ret ? '<span class="ret">' + ret + ' </span>' : '';
+  var pStr = params.map(function(p) {
+    var s = '<span class="p-type">' + p[0] + '</span> <span class="p-name">' + p[1] + '</span>';
+    if (p[2] !== undefined) s += ' <span class="p-default">= ' + p[2] + '</span>';
+    return s;
+  }).join(', ');
+  return retPart + '<span class="fn-name-text">' + name + '</span>(<span style="font-size:12px">' + pStr + '</span>)';
+}
+
+function buildHookSig(name, params, ret) {
+  var pStr = params.map(function(p) {
+    return '<span class="p-type">' + p[0] + '</span> <span class="p-name">' + p[1] + '</span>';
+  }).join(', ');
+  var retPart = ret ? ' <span class="hook-ret">&rarr; ' + ret + '</span>' : '';
+  return '<span class="hook-name">' + name + '</span>(<span style="font-size:12px">' + pStr + '</span>)' + retPart;
+}
+
+function buildParamRows(params) {
+  if (!params.length) return '';
+  var h = '<div class="param-grid"><div class="ph">Name</div><div class="ph">Type</div><div class="ph">Description</div>';
+  h += params.map(function(p) {
+    return '<div class="pc pn">' + p[1] + '</div><div class="pc pt">' + p[0] + '</div><div class="pc">' + (p[3] || '') + '</div>';
+  }).join('');
+  return h + '</div>';
+}
+
+function fn(ret, name, params, desc, calloutHtml) {
+  var hasDet = desc || params.length || ret || calloutHtml;
+  var chevron = hasDet ? '<span class="expand-btn">&#9660;</span>' : '';
+  var det = '';
+  if (hasDet) {
+    var paramHtml = buildParamRows(params);
+    var retHtml = ret ? '<div class="ret-line">Returns: <span>' + ret + '</span></div>' : '';
+    det = '<div class="fn-detail"><div class="fn-desc">' + (desc || '') + '</div>' + paramHtml + retHtml + (calloutHtml || '') + '</div>';
+  }
+  return '<div class="fn-row" onclick="toggleDetail(this)"><div class="fn-main"><div class="fn-sig">' + buildSig(ret, name, params) + '</div>' + chevron + '</div></div>' + det;
+}
+
+function hk(name, params, retStr, desc, callout) {
+  var note = callout ? '<div class="callout">' + callout + '</div>' : '';
+  return '<div class="fn-row" onclick="toggleDetail(this)"><div class="fn-main"><div class="fn-sig">' + buildHookSig(name, params, retStr) + '</div><span class="expand-btn">&#9660;</span></div></div><div class="fn-detail"><div class="fn-desc">' + desc + '</div>' + note + '</div>';
+}
+
+function build(id, arr) { document.getElementById(id).innerHTML = arr.join(''); }
+
+var callout = function(html) { return '<div class="callout">' + html + '</div>'; };
+var c = function(text, color) { return '<code style="color:var(--' + color + ');font-family:monospace">' + text + '</code>'; };
+
+build('b-cmd', [
+  fn('','ServerCmd',[['string','command',undefined,'Command string to execute'],['boolean','reliable',undefined,'Whether to send reliably']],'Sends a command string to the server. If ' + c('reliable','orange') + ' is true, the command is guaranteed to arrive.'),
+  fn('','ClientCmd',[['string','command',undefined,'Command string to execute']],'Executes a console command on the local client.'),
+  fn('','ExecuteClientCmd',[['string','command',undefined,'Command to execute']],'Executes a client command directly through the engine without routing through the console.'),
+  fn('','RawClientCmdUnrestricted',[['string','command',undefined,'Command to execute']],'Executes a raw client command, bypassing all restrictions.'),
+  fn('','ClientCmdUnrestricted',[['string','command',undefined,'Command to execute']],'Executes a client command with restriction checks disabled.'),
+  fn('','SetRestrictServerCommands',[['boolean','restrict',undefined,'true to restrict, false to allow']],'Controls whether server commands are restricted on the client.',callout('Set to ' + c('false','green') + ' to allow any server-issued command to execute on the client.')),
+  fn('','SetRestrictClientCommands',[['boolean','restrict',undefined,'true to restrict, false to allow']],'Controls whether client commands are restricted.'),
+]);
+
+build('b-view', [
+  fn('Angle','GetViewAngles',[],'Returns the engine view angles of the local player.'),
+  fn('','SetViewAngles',[['Angle','ang',undefined,'Target angle to set']],'Sets the view angles of the local player directly in the engine.'),
+]);
+
+build('b-gamestate', [
+  fn('string','GetGameDirectory',[],'Returns the game directory path (e.g. ' + c('garrysmod','str') + ').'),
+  fn('number','GetLocalPlayer',[],'Returns the entity index of the local player.'),
+  fn('number','GetTime',[],'Returns the current game time.'),
+  fn('number','GetLastTimeStamp',[],'Returns the timestamp of the last received server update.'),
+  fn('boolean','IsBoxVisible',[['Vector','mins',undefined,'Minimum extents of the box'],['Vector','maxs',undefined,'Maximum extents of the box']],'Returns whether the given axis-aligned bounding box is visible from the current view origin.'),
+  fn('boolean','IsBoxInViewCluster',[['Vector','mins',undefined,'Minimum extents of the box'],['Vector','maxs',undefined,'Maximum extents of the box']],'Returns whether the bounding box is in the current PVS (Potentially Visible Set) cluster.'),
+  fn('boolean','IsOccluded',[['Vector','mins',undefined,'Minimum extents of the box'],['Vector','maxs',undefined,'Maximum extents of the box']],'Returns whether the bounding box is occluded by world geometry.'),
+]);
+
+build('b-time', [
+  fn('number','GetInterpolationTime',[],'Returns the current interpolation time.'),
+  fn('number','GetCurTime',[],'Returns the current simulation time.'),
+  fn('','SetCurTime',[['number','val',undefined,'New simulation time']],'Overrides the current simulation time value.'),
+  fn('number','GetFrameTime',[],'Returns the duration of the last rendered frame in seconds.'),
+  fn('','SetFrameTime',[['number','val',undefined,'New frame time']],'Overrides the frame time value.'),
+  fn('number','GetRealTime',[],'Returns the real wall-clock time since engine start.'),
+  fn('','SetRealTime',[['number','val',undefined,'New real time']],'Overrides the real time value.'),
+  fn('number','GetFrameCount',[],'Returns the total number of frames rendered since engine start.'),
+  fn('','SetFrameCount',[['number','val',undefined,'New frame count']],'Overrides the frame counter.'),
+  fn('number','GetAbsFrameTime',[],'Returns the absolute frame time.'),
+  fn('','SetAbsFrameTime',[['number','val',undefined,'New absolute frame time']],'Overrides the absolute frame time.'),
+  fn('number','GetInterpolationAmount',[],'Returns the current interpolation amount (0&ndash;1).'),
+  fn('','SetInterpolationAmount',[['number','val',undefined,'New interpolation amount (0&ndash;1)']],'Overrides the interpolation amount.'),
+  fn('number','GetPreviousTick',[],'Returns the previous simulation tick number.'),
+]);
+
+build('b-convar', [
+  fn('boolean','ConVarSetValue',[['string','name',undefined,'ConVar name'],['number','val',undefined,'New value to assign']],'Sets the numeric value of a ConVar. Returns true on success.',callout('Does not spoof — the server will see the real value. Use ' + c('SpoofedConVarSetNumber','blue') + ' to send a fake value.')),
+  fn('boolean','ConVarSetFlags',[['string','name',undefined,'ConVar name'],['number','flags',undefined,'New flags bitmask']],'Force-sets the flags bitmask on a ConVar. Useful for removing ' + c('FCVAR_REPLICATED','orange') + ' or ' + c('FCVAR_CHEAT','orange') + '.'),
+  fn('boolean','SpoofConVar',[['string','name',undefined,'ConVar name to spoof']],'Marks a ConVar as spoofed — subsequent server queries will receive the spoofed value instead of the real one.'),
+  fn('boolean','SpoofedConVarSetNumber',[['string','name',undefined,'ConVar name'],['number','num',undefined,'Spoofed value']],'Sets the value the server sees when querying the spoofed ConVar.'),
+]);
+
+build('b-prediction', [
+  fn('','StartPrediction',[['CUserCmd','cmd',undefined,'The command to predict']],'Begins engine prediction for the given command. Must be paired with ' + c('FinishPrediction()','blue') + '.'),
+  fn('','FinishPrediction',[],'Ends the current prediction frame. Must be called after ' + c('StartPrediction()','blue') + '.'),
+  fn('','RunPrediction',[],'Runs the full prediction cycle for the current frame.'),
+  fn('Vector','PredictSpread',[['CUserCmd','cmd',undefined,'The active command'],['Vector','spread',undefined,'Base spread vector']],'Returns the predicted bullet spread for the current tick given a base spread vector.'),
+  fn('number','MD5PseudoRandom',[['number','seed',undefined,'Seed value']],'Computes a pseudo-random number using an MD5-based algorithm from the given seed. Used for random seed manipulation.'),
+  fn('','StartSimulation',[['Player','ply',undefined,'Player to simulate']],'Begins movement simulation for the given player.'),
+  fn('','SimulateTick',[],'Advances the active simulation by one tick.'),
+  fn('CMoveData','GetSimulationData',[],'Returns the CMoveData from the currently active simulation.'),
+  fn('','FinishSimulation',[],'Finalizes and cleans up the active simulation.'),
+]);
+
+build('b-anim', [
+  fn('','SetInterpolation',[['boolean','interp',undefined,'true to enable, false to disable']],'Enables or disables global entity interpolation.',callout('Set to ' + c('false','green') + ' to eliminate lag compensation errors during backtrack.')),
+  fn('','SetSequenceInterpolation',[['boolean','interp',undefined,'true to enable, false to disable']],'Enables or disables animation sequence interpolation via ' + c('CSequenceTransitioner','orange') + '.'),
+  fn('','EnableAnimFix',[['boolean','fix',undefined,'true to enable, false to disable']],'Enables or disables the animation desync fix. Corrects local player animation state after custom simulation.'),
+  fn('','LoopMove',[],'Executes a looped ' + c('CL_Move','orange') + ' call. Used for tick manipulation.'),
+  fn('','DrawModelExecute',[],'Forces an immediate model draw execute call.'),
+]);
+
+build('b-packet', [
+  fn('boolean','GetBSendPacket',[],'Returns whether the engine is set to send a network packet this tick.'),
+  fn('','SetBSendPacket',[['boolean','send',undefined,'true to send, false to choke']],'Forces the engine to send or suppress a packet this tick.',callout('Choking accumulates commands server-side and can be used for tick manipulation or anti-aim desync.')),
+]);
+
+build('b-usercmd', [
+  fn('','SetCommandNumber',[['CUserCmd','cmd',undefined,'Target command'],['number','num',undefined,'Command sequence number']],'Sets the command sequence number on the given CUserCmd.'),
+  fn('','SetCommandTick',[['CUserCmd','cmd',undefined,'Target command'],['number','tick',undefined,'Tick count']],'Sets the tick count on the given CUserCmd.'),
+  fn('','SetTyping',[['CUserCmd','cmd',undefined,'Target command'],['boolean','typing',undefined,'true if chatbox is open']],'Sets the typing (chatbox open) state flag on the command.'),
+  fn('','EnableContextMenu',[['CUserCmd','cmd',undefined,'Target command'],['boolean','enable',undefined,'true to enable context menu']],'Sets whether the context menu is open in the command.'),
+  fn('','SetContextVector',[['CUserCmd','cmd',undefined,'Target command'],['Vector','normal',undefined,'Context normal vector']],'Sets the context normal vector on the command.'),
+  fn('number','GetRandomSeed',[['CUserCmd','cmd',undefined,'Target command']],'Returns the random seed stored in the command. Used for weapon spread prediction.'),
+  fn('','SetRandomSeed',[['CUserCmd','cmd',undefined,'Target command'],['number','seed',undefined,'New seed value']],'Overrides the random seed in the command.'),
+  fn('number, number','FindCommandNumber',[['CUserCmd','cmd',undefined,'Target command'],['number','seed',undefined,'Desired random seed']],'Searches forward for a command number that produces the given random seed. Returns the command number and the resulting tick.'),
+  fn('','SetLastCommandAck',[['number','val',undefined,'New ack number']],'Overrides the last acknowledged command number.'),
+]);
+
+build('b-player', [
+  fn('number','GetTickBase',[['Player','ply',undefined,'Target player']],'Returns the tick base of the given player. Used for simulation accuracy.'),
+  fn('','SetTickBase',[['Player','ply',undefined,'Target player'],['number','tickbase',undefined,'New tick base value']],'Overrides the tick base of the given player.'),
+  fn('','UpdateAnimations',[['Player','ply',undefined,'Target player'],['number','yaw',undefined,'Yaw angle'],['number','pitch',undefined,'Pitch angle']],'Forces an animation update on the player with explicit yaw and pitch values.'),
+  fn('number','GetCurrentLowerBodyYaw',[['Player','ply',undefined,'Target player']],'Returns the current lower-body yaw of the player.'),
+  fn('number','GetTargetLowerBodyYaw',[['Player','ply',undefined,'Target player']],'Returns the target lower-body yaw of the player.'),
+  fn('','SetCurrentLowerBodyYaw',[['Player','ply',undefined,'Target player'],['number','yaw',undefined,'Yaw in degrees']],'Forces the current lower-body yaw of the player.'),
+]);
+
+build('b-entity', [
+  fn('','UpdateClientAnimation',[['Entity','ent',undefined,'Target entity']],'Forces a client-side animation update on the given entity.'),
+  fn('number','GetSimulationTime',[['Entity','ent',undefined,'Target entity']],'Returns the last simulation time of the entity.'),
+  fn('','InvalidateBoneCache',[['Entity','ent',undefined,'Target entity']],'Invalidates the entity bone cache, forcing a full recalculation on the next frame.'),
+  fn('','SetTargetLowerBodyYaw',[['Player','ply',undefined,'Target player'],['number','yaw',undefined,'Yaw in degrees']],'Forces the target lower-body yaw of the player.'),
+]);
+
+build('b-netvar', [
+  fn('number','GetNetworkedVarInt',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked integer directly from the entity DT table.'),
+  fn('number','GetNetworkedVarFloat',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked float from the entity DT table.'),
+  fn('boolean','GetNetworkedVarBool',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked boolean from the entity DT table.'),
+  fn('string','GetNetworkedVarString',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked string from the entity DT table.'),
+  fn('Vector','GetNetworkedVarVector',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked Vector from the entity DT table.'),
+  fn('Angle','GetNetworkedVarAngle',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked Angle from the entity DT table.'),
+  fn('Entity','GetNetworkedVarEntity',[['Entity','ent',undefined,'Target entity'],['string','table',undefined,'DT table name'],['string','var',undefined,'Variable name']],'Reads a networked Entity reference from the entity DT table.'),
+]);
+
+build('b-netchan', [
+  fn('string','GetNetName',[],'Returns the server hostname.'),
+  fn('string','GetNetAddress',[],'Returns the IP address of the connected server.'),
+  fn('number','GetNetTime',[],'Returns the current network time.'),
+  fn('number','GetNetTimeConnected',[],'Returns the duration of the current connection in seconds.'),
+  fn('number','GetNetBufferSize',[],'Returns the size of the net channel\'s buffer.'),
+  fn('number','GetNetDataRate',[],'Returns the current data rate of the connection.'),
+  fn('boolean','GetIsLoopback',[],'Returns true if the connection is a loopback (local server).'),
+  fn('boolean','GetIsTimingOut',[],'Returns true if the connection is currently timing out.'),
+  fn('number','GetOutSequenceNr',[],'Returns the current outgoing sequence number.'),
+  fn('','SetOutSequenceNr',[['number','val',undefined,'New sequence number']],'Overrides the outgoing sequence number.'),
+  fn('number','GetOutSequenceNrAck',[],'Returns the acknowledged outgoing sequence number.'),
+  fn('','SetOutSequenceNrAck',[['number','val',undefined,'New ack sequence number']],'Sets the acknowledged outgoing sequence number.'),
+  fn('number','GetInSequenceNr',[['number','val',undefined,'']],'Returns the incoming sequence number.'),
+  fn('','SetInSequenceNr',[['number','val',undefined,'New incoming sequence number']],'Sets the incoming sequence number.'),
+  fn('number','GetOutReliableState',[],'Returns the current outgoing reliable state.'),
+  fn('','SetOutReliableState',[['number','val',undefined,'New state value']],'Sets the outgoing reliable state.'),
+  fn('number','GetInReliableState',[],'Returns the current incoming reliable state.'),
+  fn('','SetInReliableState',[['number','val',undefined,'New state value']],'Sets the incoming reliable state.'),
+  fn('number','GetNetChokedPackets',[],'Returns the number of currently choked packets.'),
+  fn('','SetNetChokedPackets',[['number','val',undefined,'Number of choked packets']],'Sets the number of choked packets.'),
+  fn('number','GetPacketDrop',[],'Returns the current packet drop value.'),
+  fn('','SetPacketDrop',[['number','val',undefined,'New packet drop value']],'Sets the packet drop value.'),
+  fn('number','GetLatency',[['number','flow',undefined,'Flow direction (0 = incoming, 1 = outgoing)']],'Returns the current latency for the given flow direction.'),
+  fn('number','GetAvgLatency',[['number','flow',undefined,'Flow direction']],'Returns the average latency for the given flow.'),
+  fn('number','GetAvgLoss',[['number','flow',undefined,'Flow direction']],'Returns the average packet loss rate for the given flow.'),
+  fn('number','GetAvgChoke',[['number','flow',undefined,'Flow direction']],'Returns the average packet choke rate for the given flow.'),
+  fn('number','GetAvgData',[['number','flow',undefined,'Flow direction']],'Returns the average bytes per second for the given flow.'),
+  fn('number','GetAvgPackets',[['number','flow',undefined,'Flow direction']],'Returns the average packets per second for the given flow.'),
+  fn('number','GetTotalData',[['number','flow',undefined,'Flow direction']],'Returns the total bytes transferred on the given flow.'),
+  fn('number','GetSequenceNrFlow',[['number','flow',undefined,'Flow direction']],'Returns the sequence number for the given flow direction.'),
+  fn('number','GetPacketTime',[['number','flow',undefined,'Flow direction'],['number','frame_num',undefined,'Frame/packet index']],'Returns the timestamp of the specified packet.'),
+  fn('number','GetPacketBytes',[['number','flow',undefined,'Flow direction'],['number','frame_num',undefined,'Frame/packet index'],['number','group',undefined,'Packet group']],'Returns the byte count for a packet group.'),
+  fn('boolean','IsValidPacket',[['number','flow',undefined,'Flow direction'],['number','frame_num',undefined,'Frame/packet index']],'Returns whether the specified packet is valid.'),
+  fn('','SetTimeout',[['number','val',undefined,'Timeout threshold in seconds']],'Sets the connection timeout threshold.'),
+  fn('','SetMaxRoutablePayloadSize',[['number','val',undefined,'Max payload size in bytes']],'Sets the maximum routable payload size.'),
+  fn('','SetRemoteFramerate',[['number','frametime',undefined,'Remote frame time'],['number','std_deviation',undefined,'Standard deviation']],'Sets the reported remote framerate and its standard deviation.'),
+  fn('','SetCompressionMode',[['boolean','compression',undefined,'true to enable compression']],'Enables or disables packet compression on the net channel.'),
+  fn('','SetChallengeNr',[['number','val',undefined,'Challenge number']],'Sets the challenge number.'),
+  fn('','SetDataRate',[['number','val',undefined,'Data rate in bytes/sec']],'Sets the connection data rate limit.'),
+  fn('boolean','SendFile',[['string','filename',undefined,'File path to send'],['number','transfer_id',undefined,'Transfer identifier']],'Sends a file to the server. Returns true on success.'),
+  fn('number','RequestFile',[['number','type',undefined,'File type identifier'],['number','crc',undefined,'CRC of the file']],'Requests a file from the server by type and CRC. Returns the transfer ID.'),
+  fn('','NetShutdownStr',[['string','reason',undefined,'Shutdown reason string']],'Shuts down the net channel with a custom reason string.'),
+  fn('','NetDisconnect',[['string','reason',undefined,'Disconnect reason message']],'Disconnects from the server with the given reason message.'),
+  fn('','NetSetConVar',[['string','convar',undefined,'ConVar name'],['string','value',undefined,'Value to send']],'Sends a reliable ConVar update event to the server.'),
+  fn('','NetSetConVarUnreliable',[['string','convar',undefined,'ConVar name'],['string','value',undefined,'Value to send']],'Sends an unreliable ConVar update event to the server.'),
+  fn('table','PushSpecial',[['number','type',undefined,'Lua state type constant']],'Pushes a special Lua state table (e.g., global environment) and returns it.'),
+]);
+
+build('b-hooks', [
+  hk('PreCreateMove',[['CUserCmd','cmd']],null,'Called before the engine processes ' + c('CreateMove','orange') + '. Modify the command here to affect player movement and input before prediction runs.','This is the primary hook for movement manipulation. Changes made to ' + c('cmd','orange') + ' are visible to the engine.'),
+  hk('PostCreateMove',[['CUserCmd','cmd']],null,'Called after ' + c('CreateMove','orange') + ' has finished processing. The command has been finalized by the engine.',null),
+  hk('PreFrameStageNotify',[['number','stage']],null,'Called before ' + c('ClientDLL::FrameStageNotify','orange') + '. Use for per-frame logic that must run before rendering or network updates.',null),
+  hk('PostFrameStageNotify',[['number','stage']],null,'Called after ' + c('ClientDLL::FrameStageNotify','orange') + ' completes.',null),
+  hk('PreRunCommand',[['Player','ply'],['CUserCmd','cmd']],null,'Called before the engine runs a player command during prediction.',null),
+  hk('PostRunCommand',[['Player','ply'],['CUserCmd','cmd']],null,'Called after the engine has finished running a player command during prediction.',null),
+  hk('PreDrawModelExecute',[['string','model_name'],['number','entity_index'],['number','flags']],null,'Called before a model is drawn. Can be used to modify rendering state before model execution.',null),
+  hk('PostDrawModelExecute',[['string','model_name'],['number','entity_index'],['number','flags']],null,'Called after a model has been drawn.',null),
+  hk('SendNetMsg',[['string','msgname']],'boolean','Called before a net message is sent to the server.','Return ' + c('true','green') + ' to block the message from being sent.'),
+  hk('ShouldUpdateAnimation',[['Player','ply']],'boolean, number','Called to determine whether an animation update should occur for the given player.','Return ' + c('false','green') + ' to suppress the update. Optionally return a second value to override the animation speed.'),
+  hk('CL_Move',[],'boolean','Called before the engine\'s ' + c('CL_Move','orange') + ' function executes.','Return ' + c('true','green') + ' to block the default CL_Move execution.'),
+  hk('Effect_&lt;name&gt;',[['CEffectData','edata']],'boolean','Called before an effect named ' + c('name','orange') + ' is dispatched. Replace ' + c('&lt;name&gt;','orange') + ' with the specific effect name you want to intercept.','Return ' + c('true','green') + ' to prevent the effect from being created.'),
+]);
+</script>
+</body>
+</html>
